@@ -250,5 +250,5 @@ if __name__ == "__main__":
         logging.debug(response)
     elif command == 'http':
         ec2.runHttp()
-    else
-        help()
+    else:
+        ec2.help()

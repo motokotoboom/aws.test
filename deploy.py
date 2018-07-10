@@ -197,7 +197,7 @@ class CEcc():
 
 
     def runHttp(self):
-        server = CustomHTTPServer(('0.0.0.0', 8888))
+        server = CustomHTTPServer(('0.0.0.0', 80))
         server.set_auth('demo', 'demo')
         server.serve_forever()
         

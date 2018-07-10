@@ -55,7 +55,7 @@ class CustomServerHandler(http.server.BaseHTTPRequestHandler):
             try:
                 with open('/tmp/current.commit.txt', 'r') as f:
                     self._prevCommit= f.read()
-            except e:
+            except Exception as e:
                 self._prevCommit = None
         
             getvars = self._parse_GET()

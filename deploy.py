@@ -185,7 +185,7 @@ class CEcc():
         logger.info("Connecting to %s",self.publicIp)
         client.connect(hostname=self.publicIp, username="ubuntu", pkey=keys)
         logger.info("Executing ssh command:%s",command)
-        stdin, stdout, stderr = client.exec_command(command,get_ptu=True)
+        stdin, stdout, stderr = client.exec_command(command,get_pty=True)
         for line in iter(stdout.readline, ""):
             print(line, end="")
         client.close()

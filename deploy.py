@@ -7,13 +7,14 @@ import logging
 import os
 from httpsrv import *
 import paramiko
+from pathlib import Path
 
 
 
 ACCESS_KEY = ""
 SECRET_KEY = ""
 REGION = 'eu-west-1'
-id = 'final.test-'+str(uuid.uuid4()) 
+id = 'andrew.shtabnoi.1' 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -52,38 +53,57 @@ class CEcc():
             aws_secret_access_key = self.secret_key,
             region_name = self.region)
         logger.info('done!')
-        logger.info('creating key pair')
-        keys = self.client.create_key_pair(KeyName=id)
-   
-        with open('/tmp/'+id+'.pem', 'w') as file:
-            file.write(keys['KeyMaterial'])
+        
+
+        keyFile = Path("/tmp/"+id+'.pem')
+        if not keyFile.exists():
+            logger.info('creating key pair')
+            keys = self.client.create_key_pair(KeyName=id)
+            with open('/tmp/'+id+'.pem', 'w') as file:
+                file.write(keys['KeyMaterial'])
 
         return self
 
 
     def createInstance(self,ami='ami-58d7e821',instanceType='t2.micro',minCount=1,maxCount=1,userData=''):
-        logger.info('creating instance')
-        instance_id = self.res.create_instances(
-            ImageId=ami,
-            MinCount=minCount,
-            MaxCount=maxCount,
-            UserData=userData,
-            InstanceType=instanceType,
-            TagSpecifications=[
+        response = self.client.describe_instances(
+            Filters=[
                 {
-                    'ResourceType': 'instance',
-                    'Tags': [
-                        {
-                            'Key': 'Name',
-                            'Value': id+'.instance'
-                        },
-                    ]
-                },
-            ],
-            KeyName=id,
-        )[0].instance_id
-       
-        logger.info ('instance created')
+                    'Name': 'tag:Name',
+                    'Values': [id+'.instance']
+                }
+            ]
+        )
+        #instances=list(response)
+        instances=[]
+        if (len(response['Reservations'])>0):
+            instances = response['Reservations'][0]['Instances']
+        instance_id = None
+        if len(instances)>0:
+            instance_id = instances[0]['InstanceId']
+            logger.info('Instance %s exists already',instance_id)
+        else:
+            logger.info('creating instance')
+            instance_id = self.res.create_instances(
+                ImageId=ami,
+                MinCount=minCount,
+                MaxCount=maxCount,
+                UserData=userData,
+                InstanceType=instanceType,
+                TagSpecifications=[
+                    {
+                        'ResourceType': 'instance',
+                        'Tags': [
+                            {
+                                'Key': 'Name',
+                                'Value': id+'.instance'
+                            },
+                        ]
+                    },
+                ],
+                KeyName=id,
+            )[0].instance_id
+            logger.info ('instance created')
        
         logger.info ('waiting for instance is started:')
        
@@ -109,6 +129,24 @@ class CEcc():
         return 
 
     def createVolume(self,size=1,volumeType='standard',zone=''):
+
+        response = self.client.describe_volumes(
+                Filters=[
+                    {
+                        'Name': 'tag:Name',
+                        'Values': [
+                          id+'.'+str(size)+'G.'+volumeType+'.volume'
+                        ]
+                    },
+                ],
+        )
+        volumes = response['Volumes']
+        volume_id = None
+        if len(volumes)>0:
+            volume_id = volumes[0]['VolumeId']
+            logger.info('Volume %s exists already',volume_id)
+            return volume_id
+
         logger.info ("creating volume: %dGb type:%s in zone:%s ",size,volumeType,zone)
         volume = self.res.create_volume(
             Size=size,
@@ -135,14 +173,32 @@ class CEcc():
         return volume.volume_id
 
     def createSecurityGroup(self):
+      
+        sg = None
+        try:
+            response = self.client.describe_security_groups(
+                GroupNames=[
+                id+'.sg',
+                ],
+            )
+            if len(response['SecurityGroups']) >0:
+                sg = response['SecurityGroups'][0]['GroupId']
+                logger.info('Security group %s already exists',sg)
+                return sg
+        except Exception as e:
+          logger.info(str(e))
+
         logger.info('creating access group')
-        sg = self.res.create_security_group(
-             GroupName=id+'.sg',
+        if (sg is None):
+            try:
+                sg = self.res.create_security_group(
+                        GroupName=id+'.sg',
 
-             Description='allow inbound 80 and 22'
-        )
+                        Description='allow inbound 80 and 22'
+                )
+            except Exception as e:
+                logger.info(str(e))
 
-        print (sg.id)
      
         # )
         self.client.authorize_security_group_ingress(GroupId=sg.id,
@@ -166,9 +222,13 @@ class CEcc():
     def attachVolume(self,volume_id,instance_id,device='xvdb'):
         logger.info("Attaching volume %s to instance %s",volume_id,instance_id)
         volume =  list(self.res.volumes.filter(Filters=[{'Name': 'volume-id', 'Values': [volume_id]}]))[0]
-        response = volume.attach_to_instance(
-            InstanceId=instance_id,
-            Device=device)
+        try:
+            response = volume.attach_to_instance(
+                InstanceId=instance_id,
+                Device=device)
+        except Exception as e:
+            logger.info(str(e))
+            return
 
         waiter = self.client.get_waiter('volume_in_use')
         waiter.wait(VolumeIds=[volume.volume_id])

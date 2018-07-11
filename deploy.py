@@ -247,7 +247,7 @@ if __name__ == "__main__":
         ec2.setSecurityGroup(instance,sg)
         volume = ec2.createVolume(zone='eu-west-1c')
         ec2.attachVolume(volume,instance)
-        response = ec2.executeSsh(instance,"sudo mkfs -t ext4 /dev/xvdb;sudo mount -t auto /dev/xvdb /mnt;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git; cd aws.test")
+        response = ec2.executeSsh(instance,'sudo mkfs -t ext4 /dev/xvdb;sudo mount -t auto /dev/xvdb /mnt;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git; cd aws.test; echo"/mnt/aws.test/deploy.py -chttp&">/etc/rc.local')
         logging.debug(response)
         response = ec2.executeSsh(instance,"sudo nohup /mnt/aws.test/deploy.py -chttp&")
         logging.debug(response)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 import sys,getopt
 import boto3
 import time
@@ -138,6 +138,7 @@ class CEcc():
         logger.info('creating access group')
         sg = self.res.create_security_group(
              GroupName=id+'.sg',
+
              Description='allow inbound 80 and 22'
         )
 
@@ -187,7 +188,10 @@ class CEcc():
         logger.info("Executing ssh command:%s",command)
         stdin, stdout, stderr = client.exec_command(command,get_pty=True)
         for line in iter(stdout.readline, ""):
-            print(line, end="")
+            logger.debug(line)
+        stdin, stdout, stderr = client.exec_command(command,get_pty=True)
+        for line in iter(stderr.readline, ""):
+            logger.debug(line)
         client.close()
         return stdout
 
@@ -242,15 +246,14 @@ if __name__ == "__main__":
     if command == 'batch':
         
         ec2.connect()
-        instance = ec2.createInstance(userData = "#!/bin/sh\napt update; apt install openssh-server libssl-dev libffi-dev python3-pip -y;  LC_ALL=C pip3 install boto3 httpserver paramiko psutil ")
+        instance = ec2.createInstance(userData = "#!/bin/sh\napt update; apt install openssh-server libssl-dev libffi-dev python3-pip -y;  LC_ALL=C sudo pip3 install boto3 httpserver paramiko psutil;  date >>/tmp/date.txt ")
         sg = ec2.createSecurityGroup()
         ec2.setSecurityGroup(instance,sg)
         volume = ec2.createVolume(zone='eu-west-1c')
         ec2.attachVolume(volume,instance)
-        response = ec2.executeSsh(instance,'sudo mkfs -t ext4 /dev/xvdb;sudo mount -t auto /dev/xvdb /mnt;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git; cd aws.test; echo"/mnt/aws.test/deploy.py -chttp&">/etc/rc.local')
+        response = ec2.executeSsh(instance,'sudo mkfs -t ext4 /dev/xvdb >/dev/null 2>&1;sudo mount -t auto /dev/xvdb /mnt >/dev/null 2>&1;cd /mnt/;sudo pip3 install boto3;sudo git clone https://github.com/motokotoboom/aws.test.git >/dev/null 2>&1; date>>/tmp/date2.txt; ./start.sh ')
         logging.debug(response)
-        response = ec2.executeSsh(instance,"sudo nohup /mnt/aws.test/deploy.py -chttp&")
-        logging.debug(response)
+
     elif command == 'http':
         ec2.runHttp()
     else:

@@ -13,7 +13,7 @@ import paramiko
 ACCESS_KEY = ""
 SECRET_KEY = ""
 REGION = 'eu-west-1'
-id = 'test-'+str(uuid.uuid4()) 
+id = 'final.test-'+str(uuid.uuid4()) 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

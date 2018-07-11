@@ -5,7 +5,7 @@ do
   sleep 2
   echo "."
 done
-sudo /usr/bin/pip3 install boto3 httpserver paramiko psutil
+
 cd /mnt/aws.test
-sudo /mnt/aws.test/deploy.py -chttp
-sleep 2
+sudo screen /mnt/aws.test/deploy.py -chttp
+sleep 1

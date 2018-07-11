@@ -241,12 +241,14 @@ if __name__ == "__main__":
     if command == 'batch':
         
         ec2.connect()
-        instance = ec2.createInstance(userData = "#!/bin/sh\napt update; apt install openssh-server python3-pip -y;  LC_ALL=C pip3 install boto3 httpserver paramiko psutil")
+        instance = ec2.createInstance(userData = "#!/bin/sh\napt update; apt install openssh-server libssl-dev libffi-dev python3-pip -y;  LC_ALL=C pip3 install boto3 httpserver paramiko psutil ")
         sg = ec2.createSecurityGroup()
         ec2.setSecurityGroup(instance,sg)
         volume = ec2.createVolume(zone='eu-west-1c')
         ec2.attachVolume(volume,instance)
-        response = ec2.executeSsh(instance,"sudo mkfs -t ext4 /dev/xvdb;sudo mount -t auto /dev/xvdb /mnt;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git; cd aws.test;sudo python3 ./deploy.py -chttp")
+        response = ec2.executeSsh(instance,"sudo mkfs -t ext4 /dev/xvdb;sudo mount -t auto /dev/xvdb /mnt;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git; cd aws.test")
+        logging.debug(response)
+        response = ec2.executeSsh(instance,"sudo nohup /mnt/aws.test/deploy.py -chttp&")
         logging.debug(response)
     elif command == 'http':
         ec2.runHttp()

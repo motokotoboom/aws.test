@@ -86,7 +86,7 @@ class CustomServerHandler(http.server.BaseHTTPRequestHandler):
             }
 
             self.wfile.write(bytes(json.dumps(response), 'utf-8'))
-    def restart():
+    def restart(self):
         try:
             p = psutil.Process(os.getpid())
             for handler in p.get_open_files() + p.connections():

@@ -14,7 +14,7 @@ from pathlib import Path
 ACCESS_KEY = ""
 SECRET_KEY = ""
 REGION = 'eu-west-1'
-id = 'andrew.shtabnoi.1' 
+id = 'andrew.shtabnoi.2' 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

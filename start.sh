@@ -8,9 +8,9 @@ done
 
 nohup /mnt/aws.test/deploy.py -chttp&
 cd /mnt/aws.test
-CURR = `git rev-parse HEAD`
+CURR=`git rev-parse HEAD`
 sudo git pull
-NEXT = `git rev-parse HEAD`
+NEXT=`git rev-parse HEAD`
 echo $CURR $NEXT
 if [ "$CURR" !="$NEXT" $ ]; then
   echo "restarting http service"

@@ -316,7 +316,7 @@ if __name__ == "__main__":
         ec2.setSecurityGroup(instance,sg)
         volume = ec2.createVolume(zone='eu-west-1c')
         ec2.attachVolume(volume,instance)
-        response = ec2.executeSsh(instance,'sudo mkfs -t ext4 /dev/xvdb >/dev/null 2>&1;sudo mount -t auto /dev/xvdb /mnt >/dev/null 2>&1;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git >/dev/null 2>&1; cd /mnt/aws.test; git pull; ./start.sh ')
+        response = ec2.executeSsh(instance,'sudo mkfs -t ext4 /dev/xvdb >/dev/null 2>&1;sudo mount -t auto /dev/xvdb /mnt >/dev/null 2>&1;cd /mnt/;sudo git clone https://github.com/motokotoboom/aws.test.git >/dev/null 2>&1; cd /mnt/aws.test; ./start.sh ')
         logging.debug(response)
 
     elif command == 'http':

@@ -17,3 +17,4 @@ if [ "$CURR" != "$NEXT" ]; then
   sudo killall -9 deploy.py
   sudo nohup ./deploy.py -chttp&
 fi
+

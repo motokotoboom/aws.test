@@ -68,13 +68,13 @@ class CustomServerHandler(http.server.BaseHTTPRequestHandler):
             with open('/proc/loadavg', 'r') as f:
                 response['cpu'] = f.read()
 
-                
+                 
             self.wfile.write(bytes(json.dumps(response), 'utf-8'))
 
-            if self._prevCommit != response['commit']:
-                print ('restarting server...')
-                self.restart()
-                print ('..Done!')
+            # if self._prevCommit != response['commit']:
+            #     print ('restarting server...')
+            #     self.restart()
+            #     print ('..Done!')
 
  
         else:

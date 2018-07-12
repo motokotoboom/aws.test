@@ -6,6 +6,13 @@ do
   echo "."
 done
 
+nohup /mnt/aws.test/deploy.py -chttp&
 cd /mnt/aws.test
-sudo screen /mnt/aws.test/deploy.py -chttp
-sleep 1
+currCommit = `git git rev-parse HEAD`
+sudo git pull
+nextCommit = `git git rev-parse HEAD`
+if [ "$currCommit" !="$nextCommit" $ ]; then
+  echo "restarting http service"
+  sudo killall -9 deploy.py
+  sudo nohup /mnt/aws.test/deploy.py -chttp&
+fi

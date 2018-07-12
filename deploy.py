@@ -58,7 +58,12 @@ class CEcc():
         keyFile = Path("/tmp/"+id+'.pem')
         if not keyFile.exists():
             logger.info('creating key pair')
-            keys = self.client.create_key_pair(KeyName=id)
+            try:    
+                keys = self.client.create_key_pair(KeyName=id)
+            except Exception as e:
+                logger.info(str(e))
+                logger.info('Please get valid private key')
+                exit()
             with open('/tmp/'+id+'.pem', 'w') as file:
                 file.write(keys['KeyMaterial'])
 

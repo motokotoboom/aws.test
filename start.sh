@@ -12,7 +12,7 @@ CURR=`git rev-parse HEAD`
 sudo git pull
 NEXT=`git rev-parse HEAD`
 echo $CURR $NEXT
-if [ "$CURR" !="$NEXT" $ ]; then
+if [ "$CURR" !="$NEXT" ]; then
   echo "restarting http service"
   sudo killall -9 deploy.py
   sudo nohup /mnt/aws.test/deploy.py -chttp&
